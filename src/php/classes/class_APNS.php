@@ -292,8 +292,8 @@ class APNS {
 		$sql = "INSERT INTO `apns_devices`
 				VALUES (
 					NULL,
-					'{$appname}',
 					'{$clientid}',
+					'{$appname}',
 					'{$appversion}',
 					'{$deviceuid}',
 					'{$devicetoken}',
