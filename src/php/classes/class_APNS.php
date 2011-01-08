@@ -569,12 +569,29 @@ class APNS {
 	 * @param string $delivery Possible future date to send the message.
 	 * @access public
 	 */
-	public function newMessage($fk_device, $delivery=NULL, $clientId=NULL){
-		if(strlen($fk_device)==0) $this->_triggerError('Missing message fk_device.', E_USER_ERROR);
+	public function newMessage($fk_device=NULL, $delivery=NULL, $clientId=NULL){
 		if(isset($this->message)){
 			unset($this->message);
 			$this->_triggerError('An existring message already created but not delivered. The previous message has been removed. Use queueMessage() to complete a message.');
 		}
+
+		// If no device is specified then that means we sending a message to all.
+		if (is_null($fk_device))
+		{
+			$sql = "SELECT `pid` FROM `apns_devices`";
+
+			// Only to a set of client?
+			if (!is_null($clientId))
+				$sql .= " WHERE `clientid` = '{$this->db->prepare($clientId)}'";
+
+			$ids = array();
+			$result = $this->db->query($request);
+			while ($row = $result->fetch_array(MYSQLI_ASSOC))
+				$ids[] = $row['pid'];
+
+			$fk_device = $ids;
+		}
+
 		$this->message = array();
 		$this->message['aps'] = array();
 		$this->message['aps']['clientid'] = $clientId;
@@ -602,87 +619,100 @@ class APNS {
 	 */
 	public function queueMessage(){
 		// check to make sure a message was created
-		if(!isset($this->message)) $this->_triggerError('You cannot Queue a message that has not been created. Use newMessage() to create a new message.');
+		if (!isset($this->message))
+			$this->_triggerError('You cannot Queue a message that has not been created. Use newMessage() to create a new message.');
 
 		// loop through possible users
 		$to = $this->message['send']['to'];
 		$when = $this->message['send']['when'];
 		$clientId = is_null($this->message['aps']['clientid']) ? null : $this->db->prepare($clientId);
-		$list = (is_array($to)) ? $to:array($to);
+		$list = (is_array($to)) ? $to : array($to);
 		unset($this->message['send']);
 
-		for($i=0; $i<count($list); $i++){
+		// Lets make sure that the recipients are integers. If not then just reove
+		foreach ($list as $key => $val)
+			if (!is_numeric($val)) {
+				$this->_triggerError("TO id was not an integer: $val.");
+				unset($list[$key]);
+			}
 
-			if(!is_int($list[$i])) $this->_triggerError('TO id was not an integer.');
-			else {
-				// fetch the users id and check to make sure they have certain notifications enabled before trying to send anything to them.
+		// No recipients left?
+		if (empty($list))
+			$this->_triggerError('No valid recipient was provided.');
+
+		// Get the devices.
+		// fetch the users id and check to make sure they have certain notifications enabled before trying to send anything to them.
+		$sql = "
+			SELECT `pid`, `pushbadge`, `pushalert`, `pushsound`
+			FROM `apns_devices`
+			WHERE `pid` IN (" . implode(', ', $list) . "
+				AND `status`='active'" . (is_null($clientId) ? '' : "
+				AND `clientid` = '{$clientId}'") . ";";
+
+		$result = $this->db->query($sql);
+
+		if ($result->num_rows == 0)
+			$this->_triggerError('This user does not exist in the database. Message will not be delivered.');
+
+		while ($row = $result->fetch_array(MYSQLI_ASSOC))
+		{
+			$deliver = true;
+
+			// Device id.
+			$deviceid = $row['pid'];
+			// Get the push settings.
+			$pushbadge = $this->db->prepare($row['pushbadge']);
+			$pushalert = $this->db->prepare($row['pushalert']);
+			$pushsound = $this->db->prepare($row['pushsound']);
+
+			// has user disabled messages?
+			if($pushbadge=='disabled' && $pushalert=='disabled' && $pushsound=='disabled')
 				$deliver = false;
-				$sql = "SELECT `pushbadge`, `pushalert`, `pushsound` FROM `apns_devices` WHERE `pid`={$list[$i]} AND `status`='active'" . (is_null($clientId) ? '' : " AND `clientid` = '{$clientId}'") . " LIMIT 1;";
-				if($result = $this->db->query($sql)){
-					if($result->num_rows){
-						while($row = $result->fetch_array(MYSQLI_ASSOC)){
-							$pushbadge = $this->db->prepare($row['pushbadge']);
-							$pushalert = $this->db->prepare($row['pushalert']);
-							$pushsound = $this->db->prepare($row['pushsound']);
-						}
-						$deliver = true;
-					}
-				}
-				else {
-					$this->_triggerError('This user does not exist in the database. Message will not be delivered.');
-				}
-				// has user disabled messages?
-				if($pushbadge=='disabled' && $pushalert=='disabled' && $pushsound=='disabled') {
-					$deliver = false;
-				}
-				if($deliver===false && $result->num_rows > 0) {
-					$this->_triggerError('This user has disabled all push notifications. Message will not be delivered.');
-				}
-				else if($deliver===false && $result->num_rows==0){
-					$this->_triggerError('This user ('.$list[$i].') does not exist in the database. Message will not be delivered.');
-				}
-				else if($deliver===true) {
-					// make temp copy of message so we can cut out stuff this user may not get
-					$usermessage = $this->message;
 
-					// only send badge if user will get it
-					if($pushbadge=='disabled'){
-						$this->_triggerError('This user has disabled Push Badge Notifications, Badge will not be delivered.');
-						unset($usermessage['aps']['badge']);
-					}
+			if($deliver===false && $result->num_rows > 0) {
+				$this->_triggerError('This user has disabled all push notifications. Message will not be delivered.');
+			}
+			else if($deliver===true) {
+				// make temp copy of message so we can cut out stuff this user may not get
+				$usermessage = $this->message;
 
-					// only send alert if user will get it
-					if($pushalert=='disabled'){
-						$this->_triggerError('This user has disabled Push Alert Notifications, Alert will not be delivered.');
-						unset($usermessage['aps']['alert']);
-					}
-
-					// only send sound if user will get it
-					if($pushsound=='disabled'){
-						$this->_triggerError('This user has disabled Push Sound Notifications, Sound will not be delivered.');
-						unset($usermessage['aps']['sound']);
-					}
-
-					$fk_device = $this->db->prepare($list[$i]);
-					$message = $this->_jsonEncode($usermessage);
-					$message = $this->db->prepare($message);
-					$delivery = (!empty($when)) ? "'{$when}'":'NOW()';
-
-					$this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
-					$sql = "INSERT INTO `apns_messages`
-							VALUES (
-								NULL,
-								'{$clientId}',
-								'{$fk_device}',
-								'{$message}',
-								{$delivery},
-								'queued',
-								NOW(),
-								NOW()
-							);";
-					$this->db->query($sql);
-					unset($usermessage);
+				// only send badge if user will get it
+				if($pushbadge=='disabled'){
+					$this->_triggerError('This user has disabled Push Badge Notifications, Badge will not be delivered.');
+					unset($usermessage['aps']['badge']);
 				}
+
+				// only send alert if user will get it
+				if($pushalert=='disabled'){
+					$this->_triggerError('This user has disabled Push Alert Notifications, Alert will not be delivered.');
+					unset($usermessage['aps']['alert']);
+				}
+
+				// only send sound if user will get it
+				if($pushsound=='disabled'){
+					$this->_triggerError('This user has disabled Push Sound Notifications, Sound will not be delivered.');
+					unset($usermessage['aps']['sound']);
+				}
+
+				$fk_device = $this->db->prepare($deviceid);
+				$message = $this->_jsonEncode($usermessage);
+				$message = $this->db->prepare($message);
+				$delivery = (!empty($when)) ? "'{$when}'":'NOW()';
+
+				$this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
+				$sql = "INSERT INTO `apns_messages`
+						VALUES (
+							NULL,
+							'{$clientId}',
+							'{$fk_device}',
+							'{$message}',
+							{$delivery},
+							'queued',
+							NOW(),
+							NOW()
+						);";
+				$this->db->query($sql);
+				unset($usermessage);
 			}
 		}
 		unset($this->message);
