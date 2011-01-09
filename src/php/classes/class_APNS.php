@@ -645,9 +645,9 @@ class APNS {
 		$sql = "
 			SELECT `pid`, `pushbadge`, `pushalert`, `pushsound`
 			FROM `apns_devices`
-			WHERE `pid` IN (" . implode(', ', $list) . "
+			WHERE `pid` IN (" . implode(', ', $list) . ")
 				AND `status`='active'" . (is_null($clientId) ? '' : "
-				AND `clientid` = '{$clientId}'") . ";";
+				AND `clientid` = '{$clientId}'");
 
 		$result = $this->db->query($sql);
 
