@@ -585,7 +585,7 @@ class APNS {
 				$sql .= " AND `clientid` = '{$this->db->prepare($clientId)}'";
 
 			$ids = array();
-			$result = $this->db->query($request);
+			$result = $this->db->query($sql);
 			while ($row = $result->fetch_array(MYSQLI_ASSOC))
 				$ids[] = $row['pid'];
 
