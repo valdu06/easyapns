@@ -578,11 +578,11 @@ class APNS {
 		// If no device is specified then that means we sending a message to all.
 		if (is_null($fk_device))
 		{
-			$sql = "SELECT `pid` FROM `apns_devices`";
+			$sql = "SELECT `pid` FROM `apns_devices` WHERE `status`='active'";
 
 			// Only to a set of client?
 			if (!is_null($clientId))
-				$sql .= " WHERE `clientid` = '{$this->db->prepare($clientId)}'";
+				$sql .= " AND `clientid` = '{$this->db->prepare($clientId)}'";
 
 			$ids = array();
 			$result = $this->db->query($request);
