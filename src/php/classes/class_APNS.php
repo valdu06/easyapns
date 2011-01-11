@@ -625,11 +625,11 @@ class APNS {
 		// loop through possible users
 		$to = $this->message['send']['to'];
 		$when = $this->message['send']['when'];
-		$clientId = is_null($this->message['aps']['clientid']) ? null : $this->db->prepare($clientId);
+		$clientId = is_null($this->message['aps']['clientid']) ? null : $this->db->prepare($this->message['aps']['clientid']);
 		$list = (is_array($to)) ? $to : array($to);
 		unset($this->message['send']);
 
-		// Lets make sure that the recipients are integers. If not then just reove
+		// Lets make sure that the recipients are integers. If not then just remove
 		foreach ($list as $key => $val)
 			if (!is_numeric($val)) {
 				$this->_triggerError("TO id was not an integer: $val.");
