@@ -38,7 +38,9 @@
 	
 	// Get the users Device Model, Display Name, Unique ID, Token & Version Number
 	UIDevice *dev = [UIDevice currentDevice];
-	NSString *deviceUuid = dev.uniqueIdentifier;
+	NSString *deviceUuid = @"n/a";
+	if ([dev respondsToSelector:@selector(uniqueIdentifier)])
+		deviceUuid = dev.uniqueIdentifier;
     NSString *deviceName = [dev.name stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
 	NSString *deviceModel = [dev.model stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
 	NSString *deviceSystemVersion = dev.systemVersion;
