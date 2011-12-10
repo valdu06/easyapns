@@ -168,9 +168,12 @@ class APNS {
 	 *
 	 * @param object $db Database Object
 	 * @param array $args Optional arguments passed through $argv or $_GET
+	 * @param string $certificate Path to the production certificate.
+	 * @param string $sandboxCertificate Path to the production certificate.
+	 * @param string $logPath Path to the log file.
 	 * @access 	public
 	 */
-	function __construct($db, $args=NULL, $certificate=NULL, $sandboxCertificate=NULL) {
+	function __construct($db, $args=NULL, $certificate=NULL, $sandboxCertificate=NULL, $logPath=NULL) {
 
 		if(!empty($certificate) && file_exists($certificate))
 		{
