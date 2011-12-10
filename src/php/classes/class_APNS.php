@@ -147,7 +147,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * ?>
@@ -157,7 +157,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db, NULL, '/usr/local/apns/alt_apns.pem', '/usr/local/apns/alt_apns-dev.pem');
 	 * ?>
@@ -558,7 +558,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db); // CREATE THE OBJECT
 	 * $apns->newMessage(1, '2010-01-01 00:00:00'); // START A MESSAGE... SECOND ARGUMENT ACCEPTS ANY DATETIME STRING
@@ -612,7 +612,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * $apns->newMessage(1, '2010-01-01 00:00:00');
@@ -731,7 +731,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 *
@@ -796,7 +796,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * $apns->newMessage(1, '2010-01-01 00:00:00');
@@ -821,7 +821,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * $apns->newMessage(1, '2010-01-01 00:00:00');
@@ -853,7 +853,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * $apns->newMessage(1, '2010-01-01 00:00:00');
@@ -878,7 +878,7 @@ class APNS {
 	 *
 	 * <code>
 	 * <?php
-	 * $db = new DbConnect();
+	 * $db = new DbConnect('localhost','dbuser','dbpass','dbname');
 	 * $db->show_errors();
 	 * $apns = new APNS($db);
 	 * $apns->newMessage(1, '2010-01-01 00:00:00');
