@@ -53,8 +53,8 @@
 			[defaults setObject:deviceUuid forKey:@"deviceUuid"];
 		}
 	}
-	NSString *deviceName = [dev.name stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
-	NSString *deviceModel = [dev.model stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+	NSString *deviceName = dev.name;
+	NSString *deviceModel = dev.model;
 	NSString *deviceSystemVersion = dev.systemVersion;
 	
 	// Prepare the Device Token for Registration (remove spaces and < >)
