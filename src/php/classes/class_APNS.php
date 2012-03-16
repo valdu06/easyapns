@@ -216,7 +216,7 @@ class APNS {
 						$args['pushbadge'],
 						$args['pushalert'],
 						$args['pushsound'],
-						$args['clientid']
+						isset($args['clientid'])?$args['clientid']:null
 					);
 					break;
 
@@ -451,7 +451,15 @@ class APNS {
 			$this->_triggerError("Failed to connect to APNS: {$error} {$errorString}.");
 		}
 		else {
-			$msg = chr(0).pack("n",32).pack('H*',$token).pack("n",strlen($message)).$message;
+			// Simple notification format (Bytes: content.) :
+			// 1: 0. 2: Token length. 32: Device Token. 2: Payload length. 34: Payload
+			//$msg = chr(0).pack("n",32).pack('H*',$token).pack("n",strlen($message)).$message;
+
+			// Enhanced notification format: ("recommended for most providers")
+			// 1: 1. 4: Identifier. 4: Expiry. 2: Token length. 32: Device Token. 2: Payload length. 34: Payload
+			$expiry = time()+120; // 2 minute validity hard coded!
+			$msg = chr(1).pack("N",$pid).pack("N",$expiry).pack("n",32).pack('H*',$token).pack("n",strlen($message)).$message;
+
 			$fwrite = fwrite($fp, $msg);
 			if(!$fwrite) {
 				$this->_pushFailed($pid);
@@ -771,6 +779,14 @@ class APNS {
 				if($pushsound=='disabled'){
 					$this->_triggerError('This user has disabled Push Sound Notifications, Sound will not be delivered.');
 					unset($usermessage['aps']['sound']);
+				}
+
+				if(is_null($usermessage['aps']['clientid'])) {
+					unset($usermessage['aps']['clientid']);
+				}
+
+				if(empty($usermessage['aps'])) {
+					unset($usermessage['aps']);
 				}
 
 				$fk_device = $this->db->prepare($deviceid);
