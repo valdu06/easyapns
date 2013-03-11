@@ -83,8 +83,6 @@
                                NSLog(@"Return Data: %@", returnData);
                                
                            }];
-
-	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	
 	NSLog(@"Register URL: %@", url);
 	
