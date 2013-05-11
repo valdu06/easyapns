@@ -1,14 +1,15 @@
 /**
- * This is what you need to add to your applicationDidFinishLaunching
+ * This is what you need to add to your application:didFinishLaunchingWithOptions:
  */
-- (void)applicationDidFinishLaunching:(UIApplication *)application
-{	
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// Add registration for remote notifications
 	[[UIApplication sharedApplication] 
 		registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
 	
 	// Clear application badge when app launches
 	application.applicationIconBadgeNumber = 0;
+    
+    return YES;
 }
 
 /* 
