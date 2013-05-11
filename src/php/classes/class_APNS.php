@@ -1011,6 +1011,47 @@ class APNS {
 			$this->message['aps']['badge'] = (int)$number;
 		}
 	}
+	
+   /**
+	* Increment Message Badge
+	*
+	* <code>
+	* <?php
+	* $db = new DbConnect();
+	* $db->show_errors();
+	* $apns = new APNS($db);
+	* $apns->newMessage(1, '2010-01-01 00:00:00');
+	* $apns->incrementMessageBadge(1); // HAS TO BE A NUMBER
+	* $apns->queueMessage();
+	* ?>
+	* </code>
+	*
+	* @param int $number
+	* @access public
+	*/
+	public function incrementMessageBadge($number=NULL){
+		if(!$this->message) $this->_triggerError('Must use newMessage() before calling this method.', E_USER_ERROR);
+		
+		if($number) {
+			$sql = "SELECT `apns_messages`.`message` FROM `apns_messages` INNER JOIN `apns_devices` ON `apns_messages`.`fk_device` = `apns_devices`.`pid` AND `apns_devices`.`modified` < `apns_messages`.`modified` WHERE `apns_devices`.`pid` = '{$this->message['send']['to']}' ORDER BY `apns_messages`.`modified` DESC LIMIT 1";
+			
+			if($result = $this->db->query($sql)) {
+				if($result->num_rows) {
+					while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+						$last_message = json_decode($row['message']);
+					}
+				}
+			}
+			
+			if(isset($last_message)) {
+				$number += (int)$last_message->aps->badge;
+			}
+			
+			if(isset($this->message['aps']['badge'])) $this->_triggerError('Message Badge has already been created. Overwriting with '.$number.'.');
+			
+			$this->message['aps']['badge'] = (int)$number;
+		}
+	}
 
 	/**
 	 * Add Message Custom
