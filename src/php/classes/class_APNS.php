@@ -327,6 +327,8 @@ class APNS {
 					NOW()
 				)
 				ON DUPLICATE KEY UPDATE
+				# If not using real UUID (iOS5+), uid may change on reinstall.
+				`deviceuid`='{$deviceuid}', 
 				`devicetoken`='{$devicetoken}',
 				`devicename`='{$devicename}',
 				`devicemodel`='{$devicemodel}',
@@ -647,9 +649,9 @@ class APNS {
 	 *
 	 * @param string $error Error String
 	 * @param int $type Type of Error to Trigger
-	 * @access private
+	 * @access public
 	 */
-	private function _triggerError($error, $type=E_USER_NOTICE){
+	function _triggerError($error, $type=E_USER_NOTICE){ 
 		$backtrace = debug_backtrace();
 		$backtrace = array_reverse($backtrace);
 		$error .= "\n";
@@ -785,8 +787,9 @@ class APNS {
 
 		if ($row != NULL)
 			$this->newMessage ($row["pid"], $delivery, $clientId);
-
-
+		
+		// Return true if message created.
+		return ($row != NULL); 
 	}
 
 
