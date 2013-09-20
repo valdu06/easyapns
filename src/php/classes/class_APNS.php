@@ -89,7 +89,14 @@ class APNS {
 	* @access private
 	*/
 	private $certificate = '/usr/local/apns/apns.pem';
-
+	
+	/** Apples Production Certificate Passphrase	      
+        *						      
+        * @var string					      
+        * @access private				      
+        */						      
+	private $passphrase = 'passphrase';
+	
 	/**
 	* Apples Production APNS Gateway
 	*
@@ -113,7 +120,15 @@ class APNS {
 	* @access private
 	*/
 	private $sandboxCertificate = '/usr/local/apns/apns-dev.pem'; // change this to your development certificate absolute path
-
+	
+	/**						      
+        * Apples Sandbox Certificate Passphrase	      
+        *						      
+        * @var string					      
+        * @access private				      
+        */						      
+        private $sandboxPassphrase = 'passphrase';	
+	
 	/**
 	* Apples Sandbox APNS Gateway
 	*
@@ -200,11 +215,13 @@ class APNS {
 				'certificate'=>$this->certificate,
 				'ssl'=>$this->ssl,
 				'feedback'=>$this->feedback
+				'passphrase'=>$this->passphrase	
 			),
 			'sandbox'=>array(
 				'certificate'=>$this->sandboxCertificate,
 				'ssl'=>$this->sandboxSsl,
 				'feedback'=>$this->sandboxFeedback
+				'passphrase'=>$this->sandboxPassphrase	
 			)
 		);
 		if ($logPath !== null) {
@@ -253,7 +270,10 @@ class APNS {
 	private function checkSetup(){
 		if(!file_exists($this->certificate)) $this->_triggerError('Missing Production Certificate.', E_USER_ERROR);
 		if(!file_exists($this->sandboxCertificate)) $this->_triggerError('Missing Sandbox Certificate.', E_USER_ERROR);
-
+		
+		if (!isset($this->passphrase) || !isset($this->sandboxPassphrase))																	      
+                        $this->_triggerError('You need to specify the passphrase for the production and sandbox certificate.');	
+		
 		clearstatcache();
 		$certificateMod = substr(sprintf('%o', fileperms($this->certificate)), -3);
 		$sandboxCertificateMod = substr(sprintf('%o', fileperms($this->sandboxCertificate)), -3);
@@ -451,6 +471,7 @@ class APNS {
 	private function _connectSSLSocket($development) {
 		$ctx = stream_context_create();
 		stream_context_set_option($ctx, 'ssl', 'local_cert', $this->apnsData[$development]['certificate']);
+		stream_context_set_option($ctx, 'ssl', 'passphrase', $this->apnsData[$development]['passphrase']);
 		$this->sslStreams[$development] = stream_socket_client($this->apnsData[$development]['ssl'], $error, $errorString, 100, (STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT), $ctx);
 		if(!$this->sslStreams[$development]){
 			$this->_triggerError("Failed to connect to APNS: {$error} {$errorString}.");
@@ -591,6 +612,7 @@ class APNS {
 	private function _checkFeedback($development){
 		$ctx = stream_context_create();
 		stream_context_set_option($ctx, 'ssl', 'local_cert', $this->apnsData[$development]['certificate']);
+		stream_context_set_option($ctx, 'ssl', 'passphrase', $this->apnsData[$development]['passphrase']);
 		stream_context_set_option($ctx, 'ssl', 'verify_peer', false);
 		$fp = stream_socket_client($this->apnsData[$development]['feedback'], $error,$errorString, 100, (STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT), $ctx);
 
