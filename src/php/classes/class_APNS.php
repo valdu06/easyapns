@@ -328,6 +328,7 @@ class APNS {
 				)
 				ON DUPLICATE KEY UPDATE
 				`devicetoken`='{$devicetoken}',
+				`appversion`='{$appversion}',
 				`devicename`='{$devicename}',
 				`devicemodel`='{$devicemodel}',
 				`deviceversion`='{$deviceversion}',
