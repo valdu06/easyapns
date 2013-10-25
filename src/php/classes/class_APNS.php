@@ -220,13 +220,13 @@ class APNS {
 			'production'=>array(
 				'certificate'=>$this->certificate,
 				'ssl'=>$this->ssl,
-				'feedback'=>$this->feedback
+				'feedback'=>$this->feedback,
 				'passphrase'=>$this->passphrase	
 			),
 			'sandbox'=>array(
 				'certificate'=>$this->sandboxCertificate,
 				'ssl'=>$this->sandboxSsl,
-				'feedback'=>$this->sandboxFeedback
+				'feedback'=>$this->sandboxFeedback,
 				'passphrase'=>$this->sandboxPassphrase	
 			)
 		);
