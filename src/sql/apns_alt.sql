@@ -13,6 +13,7 @@ CREATE TABLE `apns_devices` (
   `pushsound` enum('disabled','enabled') default 'disabled',
   `development` enum('production','sandbox') character set latin1 NOT NULL default 'production',
   `status` enum('active','uninstalled') NOT NULL default 'active',
+  `badges` int(9) NOT NULL,
   `created` datetime NOT NULL,
   `modified` timestamp NOT NULL default '0000-00-00 00:00:00' on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`pid`),
@@ -28,6 +29,7 @@ CREATE TABLE `apns_devices` (
   KEY `pushsound` (`pushsound`),
   KEY `development` (`development`),
   KEY `status` (`status`),
+  KEY `badges` (`badges`),
   KEY `created` (`created`),
   KEY `modified` (`modified`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Store unique devices';

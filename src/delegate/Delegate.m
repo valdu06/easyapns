@@ -1,16 +1,16 @@
 /**
- * This is what you need to add to your application:didFinishLaunchingWithOptions:
+ * This is what you need to add to your applicationDidFinishLaunching
  */
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+
+
+- (void)applicationDidFinishLaunching:(UIApplication *)application
+{   
     // Add registration for remote notifications
 	[[UIApplication sharedApplication]
      registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
 	
 	// Clear application badge when app launches
 	application.applicationIconBadgeNumber = 0;
-    
-    return YES;
 }
 
 /*
@@ -73,15 +73,22 @@
 	// !!! CHANGE "/apns.php?" TO THE PATH TO WHERE apns.php IS INSTALLED
 	// !!! ( MUST START WITH / AND END WITH ? ).
 	// !!! SAMPLE: "/path/to/apns.php?"
-	NSString *urlString = [NSString stringWithFormat:@"/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", @"register", appName,appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
-	
+	NSString *urlString = [NSString stringWithFormat:@"/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", @"register", appName, appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
+	NSString *urlResetBadgesString = [NSString stringWithFormat:@"/apns.php?task=%@&deviceuid=%@", @"reset", deviceUuid];
+
 	// Register the Device Data
 	// !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
 	NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
 	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+
+	NSURL *urlResetBadges = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlResetBadgesString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURLRequest *requestResetBadges = [[NSURLRequest alloc] initWithURL:urlResetBadges];
+	NSData *returnDataResetBadges = [NSURLConnection sendSynchronousRequest:requestResetBadges returningResponse:nil error:nil];
 	NSLog(@"Register URL: %@", url);
 	NSLog(@"Return Data: %@", returnData);
+	
+	NSLog(@"Reset URL: %@\nReturn Data Reset Badges: %@", urlResetBadges, returnDataResetBadges);
 	
 #endif
 }

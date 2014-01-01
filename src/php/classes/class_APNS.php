@@ -235,6 +235,10 @@ class APNS {
 				case "flush":
 					$this->_flushMessages();
 					break;
+					
+				case "reset":
+					$this->_resetBadges($args['deviceuid']);
+					break;
 
 				default:
 					echo "No APNS Task Provided...\n";
@@ -323,6 +327,7 @@ class APNS {
 					'{$pushsound}',
 					'production',
 					'active',
+					'0',
 					NOW(),
 					NOW()
 				)
@@ -407,6 +412,26 @@ class APNS {
 			LIMIT 100;";
 
 		$this->_iterateMessages($sql);
+	}
+	
+	/**
+	 * ResetBadges
+	 *
+	 * This gets called by a cron job that runs as often as you want.  You might want to set it for every minute.
+	 * Like _fetchMessages, but sends all the messages for each device (_fetchMessage sends only the first message for device)
+	 *
+	 * @access private
+	 */
+	private function _resetBadges($deviceuid){
+		if(strlen($deviceuid)>40) $this->_triggerError('Device ID may not be more than 40 characters in length.', E_USER_ERROR);
+		
+		$deviceuid = $this->db->prepare($deviceuid);
+		
+		$sql = "UPDATE `apns_devices`
+				SET `badges`='0'
+				WHERE `deviceuid`='{$deviceuid}'
+				LIMIT 1;";
+		$this->db->query($sql);
 	}
 
 	/**
@@ -1029,27 +1054,23 @@ class APNS {
 	* @param int $number
 	* @access public
 	*/
-	public function incrementMessageBadge($number=NULL){
+	public function incrementMessageBadge($number=1){
 		if(!$this->message) $this->_triggerError('Must use newMessage() before calling this method.', E_USER_ERROR);
 		
-		if($number) {
-			$sql = "SELECT `apns_messages`.`message` FROM `apns_messages` INNER JOIN `apns_devices` ON `apns_messages`.`fk_device` = `apns_devices`.`pid` AND `apns_devices`.`modified` < `apns_messages`.`modified` WHERE `apns_devices`.`pid` = '{$this->message['send']['to']}' ORDER BY `apns_messages`.`modified` DESC LIMIT 1";
+		if($number) {			
+			//$sqlIncrementBadges = "UPDATE `apns_devices` SET `badges` = `badges` + {$number} WHERE `apns_devices`.`pid` = '{$this->message['send']['to']}'";
+			$sqlIncrementBadges = "UPDATE `apns_devices` SET `badges` = `badges` + {$number} WHERE `apns_devices`.`pid` = '1'";
+			$this->db->query($sqlIncrementBadges);
 			
-			if($result = $this->db->query($sql)) {
-				if($result->num_rows) {
-					while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-						$last_message = json_decode($row['message']);
-					}
-				}
-			}
-			
-			if(isset($last_message)) {
-				$number += (int)$last_message->aps->badge;
-			}
-			
+			//$sqlRequestBadges = "SELECT `badges` FROM `apns_devices` WHERE `pid` = '{$this->message['send']['to']}'";
+			$sqlRequestBadges = "SELECT `badges` FROM `apns_devices` WHERE `pid` = '1'";
+			$resultRequestBadges = $this->db->query($sqlRequestBadges);
+			$resultRequestBadges = $resultRequestBadges->fetch_array(MYSQLI_ASSOC);
+			$resultBadges = (int)$resultRequestBadges['badges'];
+				
 			if(isset($this->message['aps']['badge'])) $this->_triggerError('Message Badge has already been created. Overwriting with '.$number.'.');
 			
-			$this->message['aps']['badge'] = (int)$number;
+			$this->message['aps']['badge'] = (int)$resultBadges;
 		}
 	}
 

@@ -15,6 +15,7 @@ CREATE TABLE `apns_device_history` (
   `pushsound` enum('disabled','enabled') default 'disabled',
   `development` enum('production','sandbox') character set latin1 NOT NULL default 'production',
   `status` enum('active','uninstalled') NOT NULL default 'active',
+  `badges` int(9) NOT NULL,
   `archived` datetime NOT NULL,
   PRIMARY KEY  (`pid`),
   KEY `clientid` (`clientid`),
@@ -27,6 +28,7 @@ CREATE TABLE `apns_device_history` (
   KEY `pushsound` (`pushsound`),
   KEY `development` (`development`),
   KEY `status` (`status`),
+  KEY `badges` (`badges`),
   KEY `appname` (`appname`),
   KEY `appversion` (`appversion`),
   KEY `deviceuid` (`deviceuid`),
@@ -48,6 +50,7 @@ CREATE TABLE `apns_devices` (
   `pushsound` enum('disabled','enabled') default 'disabled',
   `development` enum('production','sandbox') character set latin1 NOT NULL default 'production',
   `status` enum('active','uninstalled') NOT NULL default 'active',
+  `badges` int(9) NOT NULL,
   `created` datetime NOT NULL,
   `modified` timestamp NOT NULL default '0000-00-00 00:00:00' on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`pid`),
@@ -63,6 +66,7 @@ CREATE TABLE `apns_devices` (
   KEY `pushsound` (`pushsound`),
   KEY `development` (`development`),
   KEY `status` (`status`),
+  KEY `badges` (`badges`),
   KEY `created` (`created`),
   KEY `modified` (`modified`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Store unique devices';
@@ -83,6 +87,7 @@ CREATE TRIGGER `Archive` BEFORE UPDATE ON `apns_devices` FOR EACH ROW INSERT INT
 	OLD.`pushsound`,
 	OLD.`development`,
 	OLD.`status`,
+	OLD.`badges`,
 	NOW()
 );;
 DELIMITER ;
