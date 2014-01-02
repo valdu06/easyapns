@@ -80,13 +80,22 @@
 	// !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
 	NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
+<<<<<<< HEAD
 	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 
 	NSURL *urlResetBadges = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlResetBadgesString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURLRequest *requestResetBadges = [[NSURLRequest alloc] initWithURL:urlResetBadges];
 	NSData *returnDataResetBadges = [NSURLConnection sendSynchronousRequest:requestResetBadges returningResponse:nil error:nil];
+=======
+        [NSURLConnection sendAsynchronousRequest:request
+                                       queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *urlR, NSData *returnData, NSError *e) {
+                               NSLog(@"Return Data: %@", returnData);
+                               
+                           }];
+	
+>>>>>>> f78e990b044caed5ee29c1bcf21afb82c9857809
 	NSLog(@"Register URL: %@", url);
-	NSLog(@"Return Data: %@", returnData);
 	
 	NSLog(@"Reset URL: %@\nReturn Data Reset Badges: %@", urlResetBadges, returnDataResetBadges);
 	
