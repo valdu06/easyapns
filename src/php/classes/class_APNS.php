@@ -1091,7 +1091,7 @@ class APNS {
                 if(strlen($deviceuid)>40) $this->_triggerError('Device ID may not be more than 40 characters in length.', E_USER_ERROR);
                 
                 if($deviceid && $number) {
-                        $sqlIncrementBadges = "UPDATE `apns_devices` SET `badges` = `badges` + {$number} WHERE `apns_devices`.`pid` = '{$deviceid}'";
+                        $sqlIncrementBadges = "UPDATE `apns_devices` SET `badges` = `badges` + {$number} WHERE `pid` = '{$deviceid}' AND `status` = 'active'";
                         $this->db->query($sqlIncrementBadges);
 
                         $sqlRequestBadges = "SELECT `badges` FROM `apns_devices` WHERE `pid` = '{$deviceid}'";
