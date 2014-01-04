@@ -1,10 +1,27 @@
+/***
+ ** WARNING:
+ **  1/ Remember to add the "AudioToolbox.framework" framework for your project.
+ **  2/ Add this follow line (#import <AudioToolbox/AudioToolbox.h>)
+ **/
+ #import <AudioToolbox/AudioToolbox.h>
+
+
+/**
+ * Add these global variables after the @implementation AppDelegate
+ */
+// !!! CHANGE "www.mywebsite.com" TO YOUR WEBSITE. Leave out the http://
+// !!! SAMPLE: "secure.awesomeapp.com"
+#define HOST @"www.mywebsite.com"
+// !!! CHANGE "/path/of/install" TO THE PATH TO WHERE apns.php IS INSTALLED. Leave blank if it's at root.
+// !!! ( MUST START WITH "/" character BUT MUST NOT END WITH "/" character ).
+// !!! SAMPLE: "/path/to/install"
+#define PATH_HOST @"/path/of/install"
+
+
 /**
  * This is what you need to add to your applicationDidBecomeActive
  */
-
-
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{   
+- (void)applicationDidBecomeActive:(UIApplication *)application {   
     // Add registration for remote notifications
 	[[UIApplication sharedApplication]
      registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
@@ -13,6 +30,7 @@
 	application.applicationIconBadgeNumber = 0;
 	[self resetBadgeServer];
 }
+
 
 /*
  * --------------------------------------------------------------------------------------------------------------
@@ -74,18 +92,12 @@
 	
 	
 	// Build URL String for Registration
-	// !!! CHANGE "www.mywebsite.com" TO YOUR WEBSITE. Leave out the http://
-	// !!! SAMPLE: "secure.awesomeapp.com"
-	NSString *host = @"www.mywebsite.com";
 	
-	// !!! CHANGE "/apns.php?" TO THE PATH TO WHERE apns.php IS INSTALLED
-	// !!! ( MUST START WITH / AND END WITH ? ).
-	// !!! SAMPLE: "/path/to/apns.php?"
-	NSString *urlString = [NSString stringWithFormat:@"/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", @"register", appName, appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
+	NSString *urlString = [NSString stringWithFormat:@"%@/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", PATH_HOST, @"register", appName, appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
 
     // Register the Device Data
     // !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
-    NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:HOST path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
                            completionHandler:^(NSURLResponse *urlReponse, NSData *returnData, NSError *error) {
@@ -129,6 +141,10 @@
 	NSLog(@"Received Push Badge: %@", badge);
 	application.applicationIconBadgeNumber = [[apsInfo objectForKey:@"badge"] integerValue];
 	
+	// Display an visual alert notification when application is running.
+	UIAlertView *notificationAlert = [[UIAlertView alloc] initWithTitle:@"New notification" message:alert delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [notificationAlert show];
+	
 #endif
 }
 
@@ -140,10 +156,8 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *deviceToken = [defaults objectForKey:@"deviceToken"];
     
-    // !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
-    NSString *host = @"www.mywebsite.com";
-    NSString *urlResetBadgeString = [NSString stringWithFormat:@"/apns.php?task=%@&devicetoken=%@", @"reset", deviceToken];
-    NSURL *urlResetBadge = [[NSURL alloc] initWithScheme:@"http" host:host path:urlResetBadgeString];
+    NSString *urlResetBadgeString = [NSString stringWithFormat:@"%@/apns.php?task=%@&devicetoken=%@", PATH_HOST, @"reset", deviceToken];
+    NSURL *urlResetBadge = [[NSURL alloc] initWithScheme:@"http" host:HOST path:urlResetBadgeString];
     NSURLRequest *requestResetBadge = [[NSURLRequest alloc] initWithURL:urlResetBadge];
     [NSURLConnection sendAsynchronousRequest:requestResetBadge queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *urlReponseResetBadge, NSData *returnDataResetBadge, NSError *errorResetBadge) {
         NSLog(@"Return Data: %@", returnDataResetBadge);
