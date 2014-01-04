@@ -1,9 +1,9 @@
 /**
- * This is what you need to add to your applicationDidFinishLaunching
+ * This is what you need to add to your applicationDidBecomeActive
  */
 
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application
+- (void)applicationDidBecomeActive:(UIApplication *)application
 {   
     // Add registration for remote notifications
 	[[UIApplication sharedApplication]
@@ -11,6 +11,7 @@
 	
 	// Clear application badge when app launches
 	application.applicationIconBadgeNumber = 0;
+	[self resetBadgeServer];
 }
 
 /*
@@ -65,6 +66,13 @@
                               stringByReplacingOccurrencesOfString:@">" withString:@""]
                              stringByReplacingOccurrencesOfString: @" " withString: @""];
 	
+	
+    // Store deviceToken value in locals preferences
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:deviceToken forKey:@"deviceToken"];
+    [defaults synchronize];
+	
+	
 	// Build URL String for Registration
 	// !!! CHANGE "www.mywebsite.com" TO YOUR WEBSITE. Leave out the http://
 	// !!! SAMPLE: "secure.awesomeapp.com"
@@ -74,30 +82,16 @@
 	// !!! ( MUST START WITH / AND END WITH ? ).
 	// !!! SAMPLE: "/path/to/apns.php?"
 	NSString *urlString = [NSString stringWithFormat:@"/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", @"register", appName, appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
-	NSString *urlResetBadgesString = [NSString stringWithFormat:@"/apns.php?task=%@&deviceuid=%@", @"reset", deviceUuid];
 
-	// Register the Device Data
-	// !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
-	NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    // Register the Device Data
+    // !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
+    NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-<<<<<<< HEAD
-	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-
-	NSURL *urlResetBadges = [[NSURL alloc] initWithScheme:@"http" host:host path:[urlResetBadgesString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-    NSURLRequest *requestResetBadges = [[NSURLRequest alloc] initWithURL:urlResetBadges];
-	NSData *returnDataResetBadges = [NSURLConnection sendSynchronousRequest:requestResetBadges returningResponse:nil error:nil];
-=======
-        [NSURLConnection sendAsynchronousRequest:request
-                                       queue:[NSOperationQueue mainQueue]
-                           completionHandler:^(NSURLResponse *urlR, NSData *returnData, NSError *e) {
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *urlReponse, NSData *returnData, NSError *error) {
                                NSLog(@"Return Data: %@", returnData);
-                               
                            }];
-	
->>>>>>> f78e990b044caed5ee29c1bcf21afb82c9857809
-	NSLog(@"Register URL: %@", url);
-	
-	NSLog(@"Reset URL: %@\nReturn Data Reset Badges: %@", urlResetBadges, returnDataResetBadges);
+    NSLog(@"Register URL: %@", url);
 	
 #endif
 }
@@ -136,6 +130,25 @@
 	application.applicationIconBadgeNumber = [[apsInfo objectForKey:@"badge"] integerValue];
 	
 #endif
+}
+
+/**
+ * Reset Badge number into database
+ */
+- (void)resetBadgeServer {
+    // Reset the Device Badge on database
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *deviceToken = [defaults objectForKey:@"deviceToken"];
+    
+    // !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
+    NSString *host = @"www.mywebsite.com";
+    NSString *urlResetBadgeString = [NSString stringWithFormat:@"/apns.php?task=%@&devicetoken=%@", @"reset", deviceToken];
+    NSURL *urlResetBadge = [[NSURL alloc] initWithScheme:@"http" host:host path:urlResetBadgeString];
+    NSURLRequest *requestResetBadge = [[NSURLRequest alloc] initWithURL:urlResetBadge];
+    [NSURLConnection sendAsynchronousRequest:requestResetBadge queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *urlReponseResetBadge, NSData *returnDataResetBadge, NSError *errorResetBadge) {
+        NSLog(@"Return Data: %@", returnDataResetBadge);
+    }];
+    NSLog(@"Reset URL: %@", urlResetBadge);
 }
 
 /*

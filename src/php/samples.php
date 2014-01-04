@@ -85,6 +85,13 @@ $apns->newMessage(1);
 $apns->addMessageCustom('acme2', array(5, 8));
 $apns->queueMessage();
 
+// APPLE APNS EXAMPLE 6
+$apns->newMessage(1);
+$apns->addMessageAlert('They killed Kenny!');
+$apns->autoIncrementBadges();
+$apns->addMessageSound('myCustomSound.aiff');
+$apns->queueMessage();
+
 // SEND MESSAGE TO MORE THAN ONE USER
 $apns->newMessage(array(1,3,4,5,8,15,16));
 $apns->addMessageAlert('Greetings Everyone!');
