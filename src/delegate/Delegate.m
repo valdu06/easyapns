@@ -3,7 +3,7 @@
  **  1/ Remember to add the "AudioToolbox.framework" framework for your project.
  **  2/ Add this follow line (#import <AudioToolbox/AudioToolbox.h>)
  **/
- #import <AudioToolbox/AudioToolbox.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 
 /**
@@ -21,7 +21,7 @@
 /**
  * This is what you need to add to your applicationDidBecomeActive
  */
-- (void)applicationDidBecomeActive:(UIApplication *)application {   
+- (void)applicationDidBecomeActive:(UIApplication *)application {
     // Add registration for remote notifications
 	[[UIApplication sharedApplication]
      registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
@@ -60,7 +60,7 @@
 	// Get the users Device Model, Display Name, Unique ID, Token & Version Number
 	UIDevice *dev = [UIDevice currentDevice];
 	NSString *deviceUuid;
-	if ([dev respondsToSelector:@selector(uniqueIdentifier)])
+	if ([dev respondsToSelector:@selector(identifierForVendor)])
         deviceUuid = dev.identifierForVendor.UUIDString;
         else {
             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -94,7 +94,7 @@
 	// Build URL String for Registration
 	
 	NSString *urlString = [NSString stringWithFormat:@"%@/apns.php?task=%@&appname=%@&appversion=%@&deviceuid=%@&devicetoken=%@&devicename=%@&devicemodel=%@&deviceversion=%@&pushbadge=%@&pushalert=%@&pushsound=%@", PATH_HOST, @"register", appName, appVersion, deviceUuid, deviceToken, deviceName, deviceModel, deviceSystemVersion, pushBadge, pushAlert, pushSound];
-
+    
     // Register the Device Data
     // !!! CHANGE "http" TO "https" IF YOU ARE USING HTTPS PROTOCOL
     NSURL *url = [[NSURL alloc] initWithScheme:@"http" host:HOST path:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -167,6 +167,6 @@
 
 /*
  * --------------------------------------------------------------------------------------------------------------
- *  END APNS CODE 
+ *  END APNS CODE
  * --------------------------------------------------------------------------------------------------------------
  */
