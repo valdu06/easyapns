@@ -24,10 +24,11 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Add registration for remote notifications
     if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
-        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
+        UIUserNotificationSettings *settingsNotifications = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound) categories:nil];
+        [application registerUserNotificationSettings:settingsNotifications];
+        [application registerForRemoteNotifications];
     } else {
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+        [application registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
     }
     
     // Clear application badge when app launches
@@ -55,10 +56,10 @@
     
     // Check what Notifications the user has turned on.  We registered for all three, but they may have manually disabled some or all of them.
     NSUInteger rntypes;
-    if ([application respondsToSelector:@selector(isRegisteredForRemoteNotifications)]) {
-        rntypes = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+    if ([application respondsToSelector:@selector(currentUserNotificationSettings)]) {
+        rntypes = [[application currentUserNotificationSettings] types];
     } else {
-        rntypes = [[UIApplication sharedApplication] enabledRemoteNotificationTypes];
+        rntypes = [application enabledRemoteNotificationTypes];
     }
     
     // Set the defaults to disabled unless we find otherwise...
